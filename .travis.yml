@@ -1,8 +1,12 @@
 language: java
 
+sudo: false
+install: true
+
 cache:
   directories:
   - ~/.m2
+  - ~/.sonar/cache
 
 env:
   global:
@@ -18,20 +22,21 @@ addons:
     - myshorthost
   hostname: myshorthost
 
+  sonarqube:
+    token:
+      secure: "0c2a39d424752786cc25458a4d8f2192db6c92e8"
+
 matrix:
   include:
     - jdk: oraclejdk7
       # coding standard
-      script: mvn clean test
-
+      script: mvn clean package
     - jdk: openjdk7
       # use 'verify' phrase to execute integration tests
-      # run integration test only one due the the Google quota limitation
       script: mvn clean verify
-
     - jdk: oraclejdk8
-      # only tests
-      script: mvn clean test
+      # tests and Sonar (which plugin requires JDK8)
+      script: mvn clean -Dsonar.host.url=https://sonarqube.com org.jacoco:jacoco-maven-plugin:prepare-agent sonar:sonar
 
 after_success:
   bash <(curl -s https://codecov.io/bash)
